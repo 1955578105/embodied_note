@@ -1,176 +1,248 @@
-# 覆盖范围、证据与待审清单
+# 题库地图、资料来源与维护清单
 
 更新时间：2026-11-04。
 
-这份文件用于防止“笔记写了多少”与“代码审了多少”混淆。第一版覆盖主动画链和关键控制路径，但不宣称已经穷尽整个仓库。
+这份文件说明本知识库覆盖了哪些方向、题目从哪里来、哪些结论已经验证，以及后续最值得补充的内容。它同时用于避免一种常见误导：网上出现一个问题，不等于所有机器人岗位都必须会；某篇论文报告成功，也不等于在任意真机上可用。
 
-## 1. 当前覆盖
+## 1. 当前分类
 
-### 数据
+正文按四册组织，但面试准备可以从三层理解。
 
-已审：
+**第一层：核心闭环**
 
-- `giga-datasets/giga_datasets/datasets/base_dataset.py`
-- `dataset.py`
-- `lerobot_dataset.py`
-- `default_collator.py`
-- `default_sampler.py`
-- `special_sampler.py`
-- `weighted_sampler.py`
-- `aspect_ratio_sampler.py`
-- `bucket_sampler.py`
-- `bucket_batch_sampler.py`
-- `giga_brain_0_transforms.py` 中的归一化、action mask、action delta、无效数据和图像输入路径
-- `lerobot_open_cache.py`
-- `lightweight_shard_index.py` 的接口和主要分片路径
+- 数据：任务定义、遥操作、同步、动作表示、清洗和混合。
+- 训练：行为克隆、VLA、生成式动作、跨本体、分布式和评测。
+- 部署：Agent、工具、客户端、服务、队列、安全和可观测性。
+- 执行：实时推理、TTC、平滑、底层控制、感知、SLAM 和导航。
 
-第一版已记录 20 条数据方法。SFT 与 RGB 相关的高阶采样、VLM/机器人混合策略和完整物化分片实现尚未逐行展开。
+**第二层：岗位差异**
 
-### 训练
+| 方向 | 优先阅读 | 常见追问 |
+|---|---|---|
+| VLA / 模仿学习算法 | 数据、训练、推理 | BC 为什么漂移、Diffusion 与 Flow、Action Chunk、跨本体、TTC |
+| 机器人控制 | 推理、控制与导航 | PID/LQR/MPC、IK、阻抗、状态估计、WBC、接触 |
+| 感知与导航 | 推理、控制与导航 | SLAM、点云、地图、A*、Nav2、VLN、ObjectNav |
+| 训练与平台工程 | 训练、部署 | FSDP、显存、精度、checkpoint、预热、追踪 |
+| 具身 Agent / 系统 | 部署 | MCP 多工具、状态机、工具权限、超时、会话和验收 |
+| 数据工程 | 数据、部署 | 同步、切片、标签、数据飞轮、采样、泄漏、隐私 |
 
-已审：
+**第三层：题目难度**
 
-- `giga-train/giga_train/trainers/trainer.py`
-- `strategies/activation_checkpointing.py`
-- `strategies/ema.py`
-- `optimizers/*`
-- `schedulers/*`
-- `samplers/parallel_batch_sampler.py`
-- `distributed/launch.py`
-- `giga-models` 的 `giga_brain_0_loss.py`
-- `modeling_giga_brain_0.py` 的 prefix/suffix、action projection、multi-flow、language loss 和 TTRTC
-- `giga_brain_0_trainer.py` 的数据加载、checkpoint、EMA、completion、loss 和 profile 入口
-- `fsdp2_sharded_ema.py`
+- 高频核心：行为克隆、VLA 与 VLM、Action Chunk、Diffusion/Flow、TTC、相机和动作接口。
+- 工程高频：ROS 2/QoS、动作队列、启动检查、延迟、故障排查、多服务资源管理。
+- 机器人学高频：PID、IK、SLAM、A*、MPC、阻抗和接触。
+- 进阶取舍：世界模型、离线 RL、双系统、跨本体、仿真到现实和长程导航。
 
-第一版已记录 30 条训练方法。仍需展开：
+## 2. 当前覆盖条目
 
-- Qwen3.5/robomanip expert 所有分支
-- Gemma3/Gemma4/其他 VLM 后端
-- 全部 FSDP/DeepSpeed/FP8 边界情况
-- sharded EMA 的详细一致性证明
-- 各种 modality 与机器人本体专属训练配置
+| 分册 | 主题数量 | 重点覆盖 |
+|---|---:|---|
+| 数据与监督信号 | 18 个主题，加 15 个速刷问答 | 采集、同步、动作语义、动作块、混合、数据飞轮、多模态 |
+| 模型与训练 | 30 个主题，加 20 个问答 | BC、ACT、Diffusion、Flow、VLA、TTC、世界模型、RL、分布式、评测 |
+| 部署与系统设计 | 22 个主题，含 20 个部署问答 | Agent/MCP、分层、独占控制、ROS 2、队列、安全、回滚、日志、系统设计 |
+| 推理、控制与感知导航 | 27 个主题，含 25 个推理控制问答 | 实时推理、KV Cache、动作处理、PID/LQR/MPC、SLAM、Nav2、VLN、WBC |
+| 合计 | 97 个编号主题 | 另有约 80 个速刷问答，覆盖理论、系统与真机排障 |
 
-### 部署
+编号是稳定引用，不表示学习时必须照顺序读完。速刷问答不单独编号，以免与正文主题重复计数。
 
-已审：
+## 3. 资料来源与使用边界
 
-- `zhangzhong_wbc/server/configs/base.py`
-- `server/src/model.py`
-- `model_pipeline.py`
-- `server.py`
-- `start_server_wbc.sh`
-- `manage_server.sh`
-- `run_client.sh`
-- 任务 launcher 与部署文档
-- resident server 与 MCP 分层文档中的实际调用链
+### 3.1 GitHub：公开题库、学习资料与系统实现
 
-第一版已记录 20 条部署方法。仍需展开：
+用于题目发现、分类对照和概念覆盖：
 
-- AgentOS/MCP 的完整执行状态机
-- 多 client、多 server 的租约和并发策略
-- 全部服务管理与系统级故障恢复
-- 配置备份和真实回滚自动化
+- [Embodied Interview QA](https://github.com/WinstonJQ/embodied-interview-qa)：公开面经选题的中文题库，覆盖通识、强化学习、VLA、世界模型、工程、腿足控制、感知导航和系统设计。
+- [Embodied Interview Guide](https://github.com/Kibry-spin/embodied-interview-guide)：具身智能面试笔记，覆盖 VLA、触觉、生成式动作、注意力和强化学习。
+- [Embodied AI Guide](https://github.com/TianxingChen/Embodied-AI-Guide)：具身智能技术路线、论文和工程资料入口。
+- [Every Embodied](https://github.com/datawhalechina/every-embodied)：从机器人基础、VLA 到强化学习和仿真实践的系统学习材料。
+- [Dive Into Embodied AI](https://github.com/datawhalechina/dive-into-embodied-ai)：机器人学、VLA、世界模型与控制路线的结构化资料。
+- [ROS 2 Tech Notes](https://github.com/Chengyawen07/ROS2-Tech-Notes)：ROS 2、TF、QoS、导航、控制和性能话题。
+- [ML Robotics Interview Prep](https://github.com/BarisYazici/ml_robotics_interview_prep)：机器人学、机器学习、SLAM、3D 几何与深度学习复习材料。
+- [RoboPrep](https://github.com/oplisty/RoboPrep)：具身 AI 面试知识、题目和工程系统资料入口。
 
-### 推理
+**使用方式**：这些资料用于确认“哪些主题被公开讨论”，不会把二手题库中的频次标记当成官方统计，也不会把题目里出现的具体公司偏好写成行业标准。
 
-已审：
+### 3.2 CSDN：中文公开面经和专题
 
-- WBC server 编译、warmup、prefix 和模型推理
-- TTRTC 训练/推理 helper
-- smooth/temporal H01 和 AgileX client
-- async inference、adaptive horizon、alignment、low-pass、continuity blend
-- resident review 得出的 completion、teleop/pause 和安全检查机制
-- client 风险点与协议约束
+公开可见的搜索结果中有：
 
-第一版已记录 21 条推理方法。仍需展开：
+- “具身智能 VLA 面经总结”，覆盖项目深挖、数据链路、模型架构、训练评测、推理部署、动作解码、Diffusion/Flow、强化学习和多模态基础。
+- “具身智能算法面经”系列，覆盖 VLA 架构、数据处理、SFT、Sim-to-Real、生成式策略和强化学习。
+- 其他机器人视觉、ROS、SLAM 和控制类公开文章，用于补充工程术语与排障场景。
 
-- 完整 ROS 控制路径与所有机器人发布 topic
-- 全部动作重采样和夹爪校准
-- Pico/teleop 介入的真实控制所有权
-- 真实模型在不同任务上的延迟、overrun 和失败模式统计数据
+CSDN 页面可能存在登录、验证码或动态加载限制。本库只把公开可见的标题、摘要和主题作为扩展线索，答案重新组织，并尽量用论文、教材和官方文档核对。
 
-## 2. 当前状态
+### 3.3 知乎：公开索引与求职讨论
 
-### 已验证的证据
+公开搜索索引可见的技术与求职文章包括：
 
-| 范围 | 证据 |
-|---|---|
-| GB0.7 三饮品 loss 与构成 | `gb08-code-compare-20261103/reports/GB08_VS_GB07_3DRINKS_LOSS_20261103.md` |
-| GB0.8 与 GB0.7 数据/训练代码差异 | `gb08-code-compare-20261103/reports/GB08_TRAIN_DATASETS_COMPARE_20261103.md` |
-| 训练调用链 | `TRAINING_CODE_MAP.md` |
-| 奶茶部署调用链 | `MILKTEA_DEPLOYMENT_FLOW.md` |
-| 部署资产校验 | `MILKTEA_HEAD_DEPLOYMENT_20261028.md` |
+- VLA 求职路线、模型生态、能力地图和面试题库类文章。
+- 具身智能岗位技术文章与项目讨论。
+- “端到端与模块化”等系统设计题。
+- 腾讯光子具身智能方向公开面经、校招岗位拆解等岗位类讨论。
 
-### 未做完整验证的方法
+知乎正文会对自动访问进行安全验证。因此本库主要使用公开搜索摘要来识别主题，不宣称抓取或复现了受限正文。个别公司、团队和岗位的提问具有明确背景，不应被泛化成通用必考。
 
-以下已有实现或单次运行证据，但尚不应当当作已完全验证：
+### 3.4 论文、官方文档和技术资料
 
-- `multi-flow` 在目标任务上的收益和代价。
-- FAST token 辅助 loss 对最终连续动作和成功率的影响。
-- DCT 正则及动作维 loss 权重是否优于基础 MSE。
-- 物化分片与虚拟多根的 I/O 和正确性收益。
-- bucket sampler 在混合分辨率数据上的实际 GPU 吞吐收益。
-- low-pass、adaptive horizon、continuity blend 的独立消融。
-- torch.compile、FP8、attention 后端在不同硬件上的数值一致性。
-- 多帧历史在真机时钟偏差和网络丢帧下的稳定性。
+用于概念和结论校准的代表资料：
 
-## 3. 下一批审查
+- [Diffusion Policy](https://diffusion-policy.cs.columbia.edu/)：动作去噪、动作块和多模态轨迹。
+- [OpenVLA](https://openvla.github.io/)：视觉语言模型与机器人动作、开放权重和微调。
+- [π0 / Physical Intelligence](https://www.pi.website/blog/pi0)：视觉语言骨干、Flow 动作专家和动作块。
+- [Real-Time Chunking](https://www.pi.website/research/real_time_chunking)：推理延迟、动作前缀和实时分块。
+- [RT-2](https://deepmind.google/discover/blog/rt-2-new-model-translates-vision-and-language-into-action/)：视觉语言动作模型与动作 token。
+- [ROS 2 Design](https://design.ros2.org/)：ROS 2 架构、实时和通信背景。
+- [Nav2](https://docs.nav2.org/)：定位、代价地图、规划、控制、恢复和行为树。
+- [MoveIt](https://moveit.ai/)：机械臂运动规划、IK、碰撞与轨迹。
+- [Isaac Lab](https://isaac-sim.github.io/IsaacLab/)：机器人仿真、强化学习和大规模并行环境。
+- [MuJoCo](https://mujoco.readthedocs.io/)：物理仿真、接触和控制。
+- [Habitat](https://aihabitat.org/)：具身导航、视觉语言导航和仿真评测。
+- ORB-SLAM、RTAB-Map 等 SLAM 项目资料：视觉里程计、图优化、回环、建图与重定位。
 
-优先级从高到低：
+**校准原则**：论文和官方文档说明方法定义与设计，不等同于公开面试发生频率；面经说明题目线索，不等于答案一定正确。
 
-1. **训练目标与消融**
-   - DCT loss
-   - action dimension loss weights
-   - multi-flow sample 数量
-   - FAST token loss 与 flow loss 的独立消融
-   - TTRTC delay 分布与执行频率的对应关系
+## 4. 本库怎样综合公开面经
 
-2. **数据加载与采样**
-   - `WeightedConcatDataset` 和 `ListWeightedSampler` 的完整实现
-   - 多机器人分组和组内/组间权重
-   - LeRobot 旧版与 v3.0 在 repack、video、advantage 上的差异
-   - virtual multi-root 的真实样本语义和误差边界
+不是简单合并链接，而是采用以下步骤：
 
-3. **模型架构**
-   - Qwen3.5 / Gemma3 / Gemma4 / robomanip expert
-   - 时间注意力和 history pool
-   - language loss chunking 对吞吐和显存的影响
-   - attention backend 数值稳定性和推理延迟
+1. 抽取主题，而不是复刻原文。
+2. 合并同义题，例如 Action Chunk、动作分块和 chunking。
+3. 把只适合某岗位的题标注岗位背景，不当作全行业必考。
+4. 把答案拆成基础做法、改进、收益、代价、失败边界。
+5. 对前沿结论加验证边界，不把论文宣传语当事实。
+6. 用 AI、机器人控制、仿真和系统设计的基础概念补充答案。
 
-4. **部署和生产控制**
-   - agent/MCP 的真实状态机
-   - 服务启动、握手、模型 lease 与 resident prepare 的超时边界
-   - 每次真实失败的根因、复现和修复状态
-   - GPU server 的多任务分片与资源预算
+### 去重示例
 
-5. **推理控制**
-   - 动作块自适应长度和触发阈值的稳定性
-   - 平滑器和连续性偏置的相位滞后
-   - teleop 接管触发与重新武装的完整状态
-   - completion 阈值与任务真正完成的偏差
-   - 不同发布频率下的延迟预算
+- “Diffusion Policy 和 Flow Matching 的区别”和“为什么 π0 用 Flow”合并为一组动作生成主题。
+- “动作块长度如何选”和“ACT 为什么用 chunking”合并为动作块调度与控制频率问题。
+- “VLA 推理慢怎么办”和“5 Hz 模型控制 50 Hz 机器人”合并为实时分层与动作队列问题。
+- “Agent 工具调用”和“MCP 单 server 多 tool”合并为公开动作目录与工具契约。
+- “Nav2 窄道”和“障碍膨胀”合并为代价地图、安全距离和底层控制联合排查。
 
-## 4. 后续记录要求
+## 5. 高频核心复习路线
 
-新增或修订条目时，按以下格式追加：
+### 路线 A：VLA 算法岗
 
-```markdown
-## X-NNN 方法名
+1. 数据：D-003 至 D-013。
+2. 模型：T-001 至 T-015。
+3. 部署：P-001 至 P-006、P-013 至 P-015。
+4. 实时：I-004 至 I-013、I-026。
+5. 项目复盘：T-028 至 T-030。
 
-**基础做法**：...
-**公司改进**：...
-**为什么可能有效**：...
-**代价/风险**：...
-**适用场景**：...
-**代码**：...
-**状态**：`启用|已实现|实验|已验证`
-**证据**：日期、提交、日志、实验或现场结果。
-```
+### 路线 B：机器人控制岗
 
-若一个方法只存在于实验脚本，必须标记 `实验`。若一个方法已被主配置引用但没有独立消融，应标记 `已实现` 或 `启用`，不要写“已验证”。
+1. 运动学：I-017。
+2. 控制：I-015 至 I-016。
+3. 状态估计：I-018 至 I-019。
+4. 导航：I-020 至 I-022。
+5. 全身与接触：I-024 至 I-025。
 
-## 5. 状态修订记录
+### 路线 C：具身平台与 Agent
 
-| 日期 | 变更 |
-|---|---|
-| 2026-11-04 | 创建首版索引和四份分册；记录 20 条数据、30 条训练、20 条部署、21 条推理方法 |
+1. 分层与工具：P-001 至 P-007。
+2. 通信和队列：P-008 至 P-013。
+3. 发布与可观测性：P-014 至 P-019。
+4. 系统设计：P-021。
+5. 故障与安全：P-020 和 I-009、I-014、I-026。
+
+### 路线 D：训练工程
+
+1. 数据和混合：D-005 至 D-015。
+2. 损失与辅助目标：T-013 至 T-017。
+3. 分布式与恢复：T-016 至 T-022。
+4. 评测和部署契约：T-026 至 T-029。
+5. 真实服务预热与显存：P-014、P-019。
+
+## 6. 面经问题的证据等级
+
+| 证据等级 | 含义 | 用法 |
+|---|---|---|
+| 公开多名作者重复出现 | 题目主题较稳定 | 作为高频主线 |
+| 单篇公开面经 | 某岗位真实出现过 | 保留背景，不泛化为全行业 |
+| 官方文档或论文 | 技术定义和机制可靠 | 校准答案与术语 |
+| 本库项目实践 | 在特定机器人上验证过 | 只说明该条件下的工程经验 |
+| 实验或传闻 | 缺少公开复现 | 标为待验证，不作为确定答案 |
+
+**本库不声称统计了无法公开核验的原始面试次数。** 对 CSDN、知乎和不同 GitHub 题库的频次标签，应理解为参考信号，而不是统一行业调查。
+
+## 7. 已验证与未验证边界
+
+### 已有较强工程证据的方法
+
+- 相机、动作和状态接口不一致会导致“服务正常但行为错误”。
+- 动作队列和推理延迟必须有时效管理。
+- TTC 需要覆盖真实执行前缀，延迟超过训练范围会退化。
+- 多帧输入应按时间而非推理次数组织。
+- ROS/导航问题需要同时检查 TF、定位、地图、代价、控制和恢复。
+- 多模态动作输入、模型预热、独占控制和显式协议对系统可靠性有直接价值。
+
+### 仍需持续验证的结论
+
+- FAST token 辅助目标能否稳定提升真机成功率，依赖任务和数据。
+- Diffusion 与 Flow 在不同控制频率、接触和动作维度上的优劣不统一。
+- 跨本体共享在什么数据规模下从负迁移变成正迁移。
+- 世界模型在接触丰富真实任务中的长时预测稳定性。
+- 视觉语言导航从仿真到真实走廊、人群和新物体时的鲁棒性。
+- 多帧历史和连续重规划的独立贡献与最优时间尺度。
+- 量化、FP8、编译和低步数生成对不同机器人动作安全边界的影响。
+
+## 8. 后续扩展清单
+
+按价值优先级继续补充：
+
+1. VLA 数据与评测：跨本体动作布局、失败数据利用、闭环 rollout 指标。
+2. 具身 Agent：规划、工具权限、长期记忆、任务验收和人工接管。
+3. 机器人导航：Nav2 真实排障、动态障碍、重定位、语义地图和 VLN。
+4. 控制与接触：IK 多解、阻抗、力控、MPC 约束、WBC 和腿足步态。
+5. 仿真与合成数据：域随机化、系统辨识、传感器建模和 sim-to-sim。
+6. 训练系统：FSDP/DeepSpeed 对比、通信瓶颈、长 checkpoint、资源规划。
+7. 可视化与交互：把感知错误、任务阶段和动作因果直观展示出来。
+8. 面试答题库：补充追问链、反例、项目复盘模板和开放题。
+
+## 9. 新增题目的写法
+
+新增一条主题时使用：
+
+- **问题**：读者或面试官在问什么。
+- **基础做法**：最直观的版本。
+- **改进**：增加的信息、目标或约束。
+- **为什么可能有效**：解释机制而不是重复定义。
+- **代价与风险**：说明延迟、显存、数据、误差和安全边界。
+- **适用场景**：何时值得使用。
+- **面试怎么答**：一段可以口头复述的完整答案。
+- **验证证据**：分别标明论文、仿真、真机或单次经验。
+
+### 不应加入的内容
+
+- 只对某内部项目可理解的文件名和函数名。
+- 未经脱敏的账号、密钥、生产路径和公司内部数据。
+- 把单次成功写成通用规律。
+- 纯粹复制外部题库而不核对。
+- 同一概念换几个近义词重复建条目。
+- 只有结论、没有机制和失败边界的“口诀”。
+
+## 10. 维护记录
+
+### 2026-11-04：公开资料扩展与通俗化
+
+- 检索 GitHub 具身智能题库、ROS 2、机器人学、SLAM、VLA 与世界模型资料。
+- 查看 CSDN 公开可见的具身智能/VLA 面经专题主题。
+- 通过公开搜索索引核对知乎的 VLA 求职与技术讨论主题。
+- 将正文改为面向任何有基础机器学习知识读者的解释。
+- 移除代码块、函数名和内部实现路径。
+- 保留原有数据的核心工程结论，增加真实面试更常见的导航、控制、SLAM、世界模型和系统设计。
+- 将分类整理为数据、训练、部署、推理控制导航四册。
+
+### 维护规则
+
+- 新题使用稳定编号，不因重排而改号。
+- 状态或结论变更时追加日期和证据。
+- 来源链接失效时保留出处名称并寻找替代资料。
+- 论文和面经分开标注，避免把“公开问题”误写成“公开结论”。
+- 每次大改后检查本地链接、标题编号、敏感信息和意外代码泄漏。
+
+## 一页总结
+
+这套笔记从工程实现抽象成知识体系，目标是让没有当前项目源码的人也能理解具身智能的关键方法和取舍，并能用清晰结构回答面试追问。公开面经决定题目覆盖面，教材、论文和官方文档负责技术准确性，真机实践负责说明这些方法的边界。
